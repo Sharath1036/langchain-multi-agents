@@ -1,9 +1,14 @@
 # Langchain Multi Agents
 
+## Softwares
+- OS: `Windows 11`
+- Python: `3.11.0`
+- pip: `22.3`
+
 ## Setup
 Clone this repository
 ```
-
+git clone https://github.com/Sharath1036/langchain-multi-agents.git
 ```
 
 Creating a virtual environment
