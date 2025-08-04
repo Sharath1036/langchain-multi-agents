@@ -3,9 +3,11 @@ import streamlit as st
 import tempfile
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from pdf_agent import PDFAgent
-from weather_agent import WeatherAgent
+
+from agents.pdf_agent import PDFAgent
+from agents.weather_agent import WeatherAgent
 
 # Ensure an event loop exists for async libraries (fix for Google Generative AI Embeddings)
 try:
@@ -63,7 +65,7 @@ with tab3:
     user_input = st.text_area("Ask multiple questions (e.g. 'What organizations has Sharath worked for and tell me the weather in Mumbai'):")
     uploaded_pdf = st.file_uploader("Upload a PDF for PDF Agent (optional)", type=["pdf"], key="multi_pdf")
     if st.button("Ask Multi-Agent"):
-        from node import split_questions, classify_question
+        from nodes.node import split_questions, classify_question
         from langchain_core.messages import HumanMessage
         import tempfile
         messages = []

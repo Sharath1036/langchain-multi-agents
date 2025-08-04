@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain_community.agent_toolkits.load_tools import load_tools
@@ -7,7 +8,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
 from langchain_community.document_loaders import PyPDFLoader
 
 

@@ -1,13 +1,18 @@
+import os
+import sys
 from typing import List, Literal
 from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph import MessagesState, END
 from langgraph.types import Command
-from weather_agent import WeatherAgent
-from pdf_agent import PDFAgent
 from langgraph.graph import StateGraph, START
 from IPython.display import Image, display
 import re
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from agents.weather_agent import WeatherAgent
+from agents.pdf_agent import PDFAgent
+
 
 def split_questions(user_message: str) -> List[str]:
     # Naive split on ' and ', ' then ', case insensitive
