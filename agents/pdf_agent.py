@@ -6,6 +6,7 @@ from langchain_community.agent_toolkits.load_tools import load_tools
 from langchain.chains import RetrievalQA
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_qdrant import QdrantVectorStore
 from langchain_community.document_loaders import PyPDFLoader
@@ -25,6 +26,7 @@ class PDFAgent:
 
     def _load_environment(self):
         load_dotenv(override=True)
+        os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
         os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
         os.environ["QDRANT_API_KEY"] = os.getenv("QDRANT_API_KEY")
         os.environ["QDRANT_URL"] = os.getenv("QDRANT_URL")
@@ -32,11 +34,26 @@ class PDFAgent:
         os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
 
     def _initialize_llm(self):
-        return ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
-            api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.0,
-        )
+        try:
+            return ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                api_key=os.getenv("GOOGLE_API_KEY"),
+                temperature=0.0,
+            )
+        
+        except Exception as e:
+            if hasattr(e, "status_code") and e.status_code == 429:
+                print("Google Gemini rate limited. Falling back to Groq...")
+            elif "429" in str(e):
+                print("Rate limit detected in error message. Falling back to Groq...")
+            else:
+                raise  # re-raise other exceptions
+
+            return ChatGroq(
+                model="llama-3.3-70b-versatile",
+                api_key=os.getenv("GROQ_API_KEY"),
+                temperature=0.0,
+            )
 
     def _initialize_embeddings(self):
         return GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")

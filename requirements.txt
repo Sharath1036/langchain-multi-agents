@@ -13,3 +13,4 @@ langsmith
 openai
 streamlit
 langchain_google_genai
+langchain-groq

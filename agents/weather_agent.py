@@ -3,6 +3,7 @@ import sys
 from langchain_community.utilities import OpenWeatherMapAPIWrapper
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain.agents import AgentType, Tool, initialize_agent
 
 class WeatherAgent:
@@ -15,6 +16,7 @@ class WeatherAgent:
 
     def _load_environment(self):
         load_dotenv(override=True)
+        os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
         os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
         os.environ["OPENWEATHERMAP_API_KEY"] = os.getenv("OPENWEATHERMAP_API_KEY")
         os.environ["LANGSMITH_TRACING"]= "true"
@@ -24,11 +26,27 @@ class WeatherAgent:
         return OpenWeatherMapAPIWrapper()
 
     def _initialize_llm(self):
-        return ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
-            api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.0,
-        )
+        try:
+            return ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                api_key=os.getenv("GOOGLE_API_KEY"),
+                temperature=0.0,
+            )
+        
+        except Exception as e:
+            if hasattr(e, "status_code") and e.status_code == 429:
+                print("Google Gemini rate limited. Falling back to Groq...")
+            elif "429" in str(e):
+                print("Rate limit detected in error message. Falling back to Groq...")
+            else:
+                raise 
+
+            return ChatGroq(
+                model="llama-3.3-70b-versatile",
+                api_key=os.getenv("GROQ_API_KEY"),
+                temperature=0.0,
+            )
+
 
     def _initialize_tools(self):
         return [
