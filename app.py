@@ -25,11 +25,17 @@ with tab1:
     uploaded_pdf = st.file_uploader("Upload a PDF", type=["pdf"])
     question = st.text_input("Ask a question about the PDF:")
     if uploaded_pdf:
-        st.info(f"PDF uploaded: {uploaded_pdf.name}, size: {uploaded_pdf.size} bytes")
-    if uploaded_pdf and question:
+        if 'uploaded_pdf_data' not in st.session_state:
+            st.session_state.uploaded_pdf_data = uploaded_pdf.read()
+            st.session_state.uploaded_pdf_name = uploaded_pdf.name
+            st.session_state.uploaded_pdf_size = uploaded_pdf.size
+
+    st.info(f"PDF uploaded: {st.session_state.uploaded_pdf_name}, size: {st.session_state.uploaded_pdf_size} bytes")
+
+    if 'uploaded_pdf_data' in st.session_state and question:
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-                tmp_file.write(uploaded_pdf.read())
+                tmp_file.write(st.session_state.uploaded_pdf_data)
                 tmp_path = tmp_file.name
             st.info(f"Saved PDF to temp file: {tmp_path}")
             pdf_agent = PDFAgent(pdf_path=tmp_path)
@@ -41,6 +47,7 @@ with tab1:
             st.error(f"Error processing PDF: {e}")
             import traceback
             st.text(traceback.format_exc())
+
 
 with tab2:
     st.header("Weather Agent")
