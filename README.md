@@ -1,19 +1,49 @@
----
-title: Langchain Multi Agents
-emoji: 🚀
-colorFrom: red
-colorTo: red
-sdk: docker
-app_port: 8501
-tags:
-- streamlit
-pinned: false
-short_description: Streamlit template space
----
+# Langchain Multi Agents
 
-# Welcome to Streamlit!
+## Setup
+Clone this repository
+```
 
-Edit `/src/streamlit_app.py` to customize this app to your heart's desire. :heart:
+```
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+Creating a virtual environment
+```
+python -m venv myenv
+```
+```
+myenv\Scripts\activate
+```
+
+Adding environment variables. Create a `.env` file add add the below variables
+```
+OPENWEATHERMAP_API_KEY
+QDRANT_API_KEY
+QDRANT_URL
+LANGSMITH_API_KEY
+GOOGLE_API_KEY
+```
+
+## Running the code 
+### Running the PDF Agent
+```
+python agents/pdf_agent.py
+```
+
+### Running the Weather Agent
+```
+python agents/weather_agent.py
+```
+
+### Running the nodes
+```
+python nodes/node.py
+```
+
+### Running the streamlit application
+```
+streamlit run app.py
+```
+
+
+
+

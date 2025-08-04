@@ -15,7 +15,7 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 
-st.set_page_config(page_title="LangGraph Agents Demo", layout="wide")
+st.set_page_config(page_title="Langchain Agents Demo", layout="wide")
 st.title("LangGraph Agents Demo")
 
 tab1, tab2, tab3 = st.tabs(["PDF Agent", "Weather Agent", "Multi-Agent QA"])
