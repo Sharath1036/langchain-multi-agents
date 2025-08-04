@@ -21,6 +21,7 @@ myenv\Scripts\activate
 
 Adding environment variables. Create a `.env` file add add the below variables
 ```
+GROQ_API_KEY
 OPENWEATHERMAP_API_KEY
 QDRANT_API_KEY
 QDRANT_URL
