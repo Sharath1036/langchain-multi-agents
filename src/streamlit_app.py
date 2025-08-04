@@ -1,40 +1,97 @@
-import altair as alt
-import numpy as np
-import pandas as pd
+import asyncio
 import streamlit as st
+import tempfile
+from pdf_agent import PDFAgent
+from weather_agent import WeatherAgent
 
-"""
-# Welcome to Streamlit!
+# Ensure an event loop exists for async libraries (fix for Google Generative AI Embeddings)
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+st.set_page_config(page_title="LangGraph Agents Demo", layout="wide")
+st.title("LangGraph Agents Demo")
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+tab1, tab2, tab3 = st.tabs(["PDF Agent", "Weather Agent", "Multi-Agent QA"])
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+with tab1:
+    st.header("PDF Agent")
+    uploaded_pdf = st.file_uploader("Upload a PDF", type=["pdf"])
+    question = st.text_input("Ask a question about the PDF:")
+    if uploaded_pdf and question:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(uploaded_pdf.read())
+            tmp_path = tmp_file.name
+        pdf_agent = PDFAgent(pdf_path=tmp_path)
+        with st.spinner("Processing..."):
+            answer = pdf_agent.ask(question)
+        st.success("Answer:")
+        st.write(answer)
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+with tab2:
+    st.header("Weather Agent")
+    location = st.text_input("Enter a location for weather info: e.g. Mumbai")
+    if location:
+        weather_agent = WeatherAgent()
+        with st.spinner("Fetching weather..."):
+            try:
+                result = weather_agent.ask(location)
+                st.success("Weather Info:")
+                st.write(result)  # This might be None or a dict
+                # Try to extract the answer if it's a dict or object
+                # if isinstance(result, dict):
+                #     # Try common keys
+                #     if "output" in result:
+                #         st.write(result["output"])
+                #     elif "result" in result:
+                #         st.write(result["result"])
+                #     else:
+                #         st.write(str(result))
+                # elif hasattr(result, "content"):
+                #     st.write(result.content)
+                # elif result is not None:
+                #     st.write(str(result))
+            except Exception as e:
+                st.error(f"Error: {e}")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
-
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
-
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+with tab3:
+    st.header("Multi-Agent QA (PDF + Weather)")
+    user_input = st.text_area("Ask multiple questions (e.g. 'What organizations has Sharath worked for and tell me the weather in Mumbai'):")
+    uploaded_pdf = st.file_uploader("Upload a PDF for PDF Agent (optional)", type=["pdf"], key="multi_pdf")
+    if st.button("Ask Multi-Agent"):
+        from node import split_questions, classify_question
+        from langchain_core.messages import HumanMessage
+        import tempfile
+        messages = []
+        # If PDF uploaded, save and use it
+        pdf_path = None
+        if uploaded_pdf:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                tmp_file.write(uploaded_pdf.read())
+                pdf_path = tmp_file.name
+        # Split and process each question
+        questions = split_questions(user_input)
+        for question in questions:
+            agent_name = classify_question(question)
+            if agent_name == "pdf_agent":
+                if pdf_path:
+                    pdf_agent = PDFAgent(pdf_path=pdf_path)
+                else:
+                    pdf_agent = PDFAgent(pdf_path="Sharath_OnePage.pdf")
+                result = pdf_agent.agent.invoke({"input": question})
+                if isinstance(result, dict):
+                    text_result = result.get("output") or result.get("text") or str(result)
+                else:
+                    text_result = str(result)
+                messages.append(("PDF Agent", text_result))
+            else:
+                weather_agent = WeatherAgent()
+                import re
+                match = re.search(r"weather in ([\w\s,]+)", question, re.IGNORECASE)
+                location = match.group(1).strip() if match else question
+                result = weather_agent.ask(location)
+                messages.append(("Weather Agent", str(result)))
+        st.subheader("Results:")
+        for agent, answer in messages:
+            st.markdown(f"**{agent}:** {answer}")

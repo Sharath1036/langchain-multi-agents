@@ -1,3 +1,15 @@
-altair
-pandas
+langchain
+langchain-community
+langchain-openai
+langgraph
+pyowm
+python-dotenv
+pypdf
+langchain-qdrant
+qdrant-client
+requests
+ipython
+langsmith
+openai
 streamlit
+langchain_google_genai
