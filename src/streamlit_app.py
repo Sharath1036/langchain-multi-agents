@@ -1,11 +1,6 @@
 import asyncio
 import streamlit as st
 import tempfile
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from agents.pdf_agent import PDFAgent
 from agents.weather_agent import WeatherAgent
 
