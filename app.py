@@ -30,7 +30,9 @@ with tab1:
             st.session_state.uploaded_pdf_name = uploaded_pdf.name
             st.session_state.uploaded_pdf_size = uploaded_pdf.size
 
-    st.info(f"PDF uploaded: {st.session_state.uploaded_pdf_name}, size: {st.session_state.uploaded_pdf_size} bytes")
+
+    if 'uploaded_pdf_name' in st.session_state and 'uploaded_pdf_size' in st.session_state:
+        st.info(f"PDF uploaded: {st.session_state.uploaded_pdf_name}, size: {st.session_state.uploaded_pdf_size} bytes")
 
     if 'uploaded_pdf_data' in st.session_state and question:
         try:
