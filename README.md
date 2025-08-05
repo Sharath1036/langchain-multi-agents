@@ -19,6 +19,12 @@ python -m venv myenv
 myenv\Scripts\activate
 ```
 
+Installing dependencies
+```
+pip install -r requirements.txt
+```
+
+
 Adding environment variables. Create a `.env` file add add the below variables
 ```
 GROQ_API_KEY
